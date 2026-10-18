@@ -1,0 +1,8 @@
+{
+  "schemaVersion": 1,
+  "campus": "清华大学",
+  "datasetStatus": "awaiting_verified_data",
+  "updatedAt": null,
+  "notice": "尚未收到此前的场所调查结果。已确认目标校园为清华大学；教室官方课表已在独立区域接入，但允许自习、场景设施和图书馆资源尚待核实，不生成未经核实的完整场景推荐。",
+  "places": []
+}

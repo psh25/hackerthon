@@ -1,0 +1,113 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#244d3e">
+  <meta name="description" content="栖学，基于已核实官方信息的校园学习空间发现器。不猜测空位，不虚构设施。">
+  <title>栖学 · 校园学习空间发现器</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Crect width='40' height='40' rx='12' fill='%23244d3e'/%3E%3Cpath d='M10 13h8l3 4 3-4h6v16h-7l-3 3-3-3h-7z' fill='none' stroke='%23f4f0e7' stroke-width='2'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="/styles.css">
+  <script type="module" src="/js/app.js"></script>
+  <script type="module" src="/js/connection.js"></script>
+  <script type="module" src="/js/classrooms.js"></script>
+  <script type="module" src="/js/planner.js"></script>
+</head>
+<body>
+  <a class="skip-link" href="#discover">跳到空间推荐</a>
+  <header class="site-header shell">
+    <a class="brand" href="/" aria-label="栖学首页">
+      <span class="brand-mark" aria-hidden="true"><svg viewBox="0 0 32 32"><path d="M5 7h8l3 3 3-3h8v17h-8l-3 3-3-3H5zM16 10v17"/></svg></span>
+      <span>栖学<span class="brand-sub">CAMPUS SPACE FINDER</span></span>
+    </a>
+    <nav aria-label="主导航"><a class="nav-active" href="#discover">发现空间</a><button class="nav-button" id="about-button" type="button">数据与原则 <span aria-hidden="true">↗</span></button></nav>
+    <span class="edition"><span class="status-dot"></span>校园探索版 <span class="edition-version">/ 02</span></span>
+  </header>
+
+  <main class="shell">
+    <section class="hero" aria-labelledby="hero-title">
+      <div class="hero-copy">
+        <p class="eyebrow"><span class="small-line"></span> 好好学习，也要找对地方</p>
+        <h1 id="hero-title">找到一处，<br>把思绪<span class="serif-accent">安放。</span></h1>
+        <p class="hero-description">一个人的专注，一群人的灵感。<br>从当下的学习方式出发，发现适合你的校园角落。</p>
+        <a class="hero-cta" href="#discover">寻找我的学习空间 <span aria-hidden="true">↗</span></a>
+        <p class="hero-footnote"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="m10 2 6 2v5c0 4-6 8-6 8S4 13 4 9V4zM7 9l2 2 4-4"/></svg>依据官方信息，不猜测实时空位</p>
+      </div>
+      <div class="hero-art" aria-hidden="true">
+        <div class="art-grid"></div><span class="art-label">A LITTLE ROOM TO THINK</span>
+        <svg class="room-drawing" viewBox="0 0 540 340" fill="none">
+          <path d="M113 251 284 319 468 239 295 176Z" fill="#e4dfd0"/>
+          <path d="m114 251 1-150 178-76v151M293 25l174 71v143" stroke="#c4cab9" stroke-width="2"/>
+          <path d="m138 113 129-55v108l-129 54Z" fill="#e5ebdf" stroke="#a7b4a0" stroke-width="2"/>
+          <path d="m145 118 115-48v90l-115 48Z" fill="#f4f4e9"/>
+          <path d="m202 94 1 90m-57-22 113-47" stroke="#a7b4a0" stroke-width="3"/>
+          <path d="m208 259 1-66 143-39 62 32-146 46Z" fill="#b9885b"/>
+          <path d="m209 193 59 30 146-37M268 223v9m-52-15v51m187-65v45m-129-12v55" stroke="#76583f" stroke-width="7" stroke-linecap="round"/>
+          <path d="m249 188 34-10 32 15-36 11Z" fill="#fbf6e9" stroke="#56745d" stroke-width="2"/>
+          <path d="m281 178-2 26m3-13 21-5" stroke="#a5b196"/>
+          <path d="m333 182 17-6m-8 1v-40l-19-14" stroke="#385c47" stroke-width="5" stroke-linecap="round"/>
+          <path d="m305 121 16-6 13 13-31 11Z" fill="#385c47"/>
+          <path d="m295 261 42-17 1-38-42 16Z" fill="#6e896b" stroke="#49684e" stroke-width="2"/>
+          <path d="m295 260 27 14 42-18-27-13Z" fill="#8ba07f"/>
+          <path d="m299 264-1 35m62-42 1 29m-40-12v33" stroke="#49684e" stroke-width="4" stroke-linecap="round"/>
+          <path d="m416 237 20 8 19-8-4-29-31-1Z" fill="#cfb58b"/>
+          <path d="m436 214-2-62m1 39c-24 0-26-24-26-24 26-2 26 24 26 24Zm0-15c24-2 29-27 29-27-30 0-29 27-29 27Z" fill="#7e986a" stroke="#5c7a53" stroke-width="2"/>
+          <path d="m434 159c-18-11-13-33-13-33 22 9 13 33 13 33Z" fill="#688659"/>
+        </svg>
+        <div class="art-note"><span class="note-spark">✳</span><div>留一点空间，给专注。<small>YOUR NEXT GOOD STUDY SPOT</small></div></div>
+        <span class="art-index">01 — FIND YOUR FOCUS</span>
+      </div>
+    </section>
+
+    <section id="discover" class="discover" aria-labelledby="discover-title">
+      <div class="section-kicker"><span>01 / 选择学习场景</span><span>此刻，你想怎样学习？</span></div>
+      <div class="scenario-grid" role="group" aria-label="选择学习场景">
+        <button class="scenario is-active" type="button" data-scenario="quiet" aria-pressed="true"><span class="scenario-icon" aria-hidden="true"><svg viewBox="0 0 28 28"><path d="M4 6h8l2 2 2-2h8v16h-8l-2 2-2-2H4zM14 8v16M7 10h4m-4 4h4m6-4h4m-4 4h4"/></svg></span><span class="scenario-text"><strong>安静学习</strong><small>把专注留给自己</small></span><span class="scenario-arrow" aria-hidden="true">↗</span></button>
+        <button class="scenario" type="button" data-scenario="group" aria-pressed="false"><span class="scenario-icon" aria-hidden="true"><svg viewBox="0 0 28 28"><path d="M4 5h20v14h-9l-6 5v-5H4zM8 10h12M8 14h8"/></svg></span><span class="scenario-text"><strong>小组讨论</strong><small>让想法碰个面</small></span><span class="scenario-arrow" aria-hidden="true">↗</span></button>
+        <button class="scenario" type="button" data-scenario="short" aria-pressed="false"><span class="scenario-icon" aria-hidden="true"><svg viewBox="0 0 28 28"><circle cx="14" cy="14" r="10"/><path d="M14 8v7l5 3M10 2h8"/></svg></span><span class="scenario-text"><strong>临时学习</strong><small>善用一段碎片时间</small></span><span class="scenario-arrow" aria-hidden="true">↗</span></button>
+        <button class="scenario" type="button" data-scenario="power" aria-pressed="false"><span class="scenario-icon" aria-hidden="true"><svg viewBox="0 0 28 28"><path d="M10 3v6m8-6v6M7 9h14v4a7 7 0 0 1-14 0zM14 20v5"/></svg></span><span class="scenario-text"><strong>需要供电</strong><small>给设备，也给自己充电</small></span><span class="scenario-arrow" aria-hidden="true">↗</span></button>
+      </div>
+
+      <section class="daily-panel" aria-labelledby="daily-title">
+        <div class="panel-heading"><h2 id="daily-title">今天，给学习留多久？</h2><span>需求只保存在本机</span></div>
+        <div class="clock-bar"><time id="system-clock" aria-label="当前系统时间">正在读取系统时间…</time><button id="use-now" type="button" class="text-button">从现在开始</button></div><p id="clock-note" class="panel-note"></p>
+        <form id="daily-needs" class="daily-form">
+          <label>学习日期<input id="need-date" type="date" required></label>
+          <label>开始时间<input id="need-time" type="time" required></label>
+          <label>计划时长<select id="need-duration"><option value="30">30 分钟</option><option value="60" selected>1 小时</option><option value="90">1.5 小时</option><option value="120">2 小时</option><option value="180">3 小时</option><option value="240">4 小时</option></select></label>
+          <label>官方开始节次<select id="need-period-start"><option value="">请选择</option><option value="1">第1节</option><option value="2">第2节</option><option value="3">第3节</option><option value="4">第4节</option><option value="5">第5节</option><option value="6">第6节</option></select></label>
+          <label>官方结束节次<select id="need-period-end"><option value="">请选择</option><option value="1">第1节</option><option value="2">第2节</option><option value="3">第3节</option><option value="4">第4节</option><option value="5">第5节</option><option value="6">第6节</option></select></label>
+          <label class="power-preference"><input id="need-power" type="checkbox">优先提供电源</label>
+          <button class="panel-button" type="submit">按我的需求推荐 →</button>
+        </form>
+        <p id="needs-message" class="panel-note" role="status">选日期与官方起止节次后点击推荐，直接使用本周缓存。开始时间和时长暂用于记录规划：节次对应钟点尚待核实，不自动换算。</p>
+      </section>
+      <section class="daily-panel" aria-labelledby="agenda-heading"><div class="panel-heading"><h2 id="agenda-heading">我的动态日程 <span id="agenda-date-label"></span></h2><span>个人课表官方导入尚未接通</span></div><p class="panel-note">课程、会议、办事都可占用时间；“本次不参加”仅调整你自己的单次计划，不能把有课教室变成空闲教室。</p><form id="agenda-form" class="daily-form"><label>日期<input id="agenda-event-date" type="date" required></label><label>事项<input id="agenda-title" maxlength="100" required placeholder="课程 / 会议 / 办事"></label><label>开始<input id="agenda-start" type="time" required></label><label>结束<input id="agenda-end" type="time" required></label><label>类型<select id="agenda-kind"><option value="course">课程</option><option value="event">其他事项</option></select></label><label>地点<input id="agenda-location" maxlength="120" placeholder="可选，尚未计算路线"></label><button type="submit" class="panel-button">加入本机日程</button></form><div class="daily-form"><label>事务前后预留（分钟）<input id="travel-buffer" type="number" min="0" max="120" step="1" value="10"></label><span class="panel-note">自设预留，不是地图测算的步行时间。</span><button id="clear-agenda" type="button" class="text-button">清除全部本机日程</button></div><p id="personal-window" class="panel-note" role="status"></p><ul id="agenda-events" class="agenda-events"></ul><p id="agenda-message" class="panel-note" role="status"></p><p class="panel-note">路线暂未接通，可先查阅<a class="source-link" href="https://www.tsinghua.edu.cn/zjqh/xyfg/xydt.htm" target="_blank" rel="noopener noreferrer">清华官方校园地图 ↗</a>；作品尚未取得建筑坐标、入口与可通行路径。</p></section>
+      <section id="study-recommendations" class="daily-panel recommendation-panel" aria-labelledby="study-title" hidden><div class="panel-heading"><h2 id="study-title" tabindex="-1">为你找到的课表条件推荐 <span id="study-result-count" class="result-count">0</span></h2><span>允许自习与场景设施仍待核实</span></div><p id="study-summary" class="panel-note" role="status" aria-live="polite"></p><div id="study-results" class="results"></div><button id="more-study-results" class="text-button" type="button" hidden>再显示12个推荐</button></section>
+      <section class="cache-panel" aria-labelledby="cache-status"><div><h2 id="cache-status">正在读取本周课表缓存…</h2><p id="cache-message" class="panel-note">同一周内优先使用本机已采集课表，无需反复登录。</p></div><a href="#connection-title" class="text-button">有调课？主动更新官方课表 ↓</a></section>
+      <section class="connection-panel" aria-labelledby="connection-title">
+        <div class="panel-heading"><h2 id="connection-title">连接官方资源</h2><span class="connection-badge">本机认证 · 只读连接</span></div>
+        <p id="connection-status" class="connection-status" role="status">尚未连接官方门户</p>
+        <p id="connection-message" class="panel-note" aria-live="polite">在官方窗口输入账号密码并完成二次认证，作品不接收你的密码。教室课表可只读查询，其他资源仍待核实。</p>
+        <div class="connection-actions"><button id="connect-official" class="panel-button" type="button">打开官方登录窗口 ↗</button><button id="refresh-official" type="button" disabled>我已完成认证 · 检查连接</button><button id="disconnect-official" type="button" disabled>断开并清除本次会话</button></div>
+        <div class="connection-actions"><button id="open-classrooms" type="button" disabled>自动打开教室查询</button><button id="inspect-classrooms" type="button" disabled>读取当前教室页面</button><button id="query-classrooms" type="button" disabled>按官方当前条件自动查询</button></div>
+        <p id="classroom-message" class="panel-note" role="status">教室资源尚未采集；课表空闲不等于允许自习或实时有座。</p>
+        <ul id="official-resource-links" class="official-resource-links" aria-label="发现的官方资源入口"></ul>
+        <p class="panel-note">本机单用户原型，登录窗口在服务器所在电脑打开。连接有效不代表资源已同步；不自动预约，不读取成绩或消息。个人官方课表导入尚未接通，需单独核实真实入口。</p>
+        <details class="classroom-reference"><summary>已从当前官方窗口读取的页面参考（待复核，不参与推荐）</summary><p id="reference-message" class="panel-note">正在读取页面参考记录…</p><ul id="reference-rooms"></ul></details>
+      </section>
+      <section class="daily-panel" aria-labelledby="classrooms-title"><div class="panel-heading"><h2 id="classrooms-title">教室官方课表候选</h2><span>课表空闲 ≠ 允许自习 ≠ 实时有座</span></div><div class="daily-form"><label>查看节次<select id="classroom-period"><option value="all">第1–6节全部</option><option value="1">第1节</option><option value="2">第2节</option><option value="3">第3节</option><option value="4">第4节</option><option value="5">第5节</option><option value="6">第6节</option></select></label><label class="power-preference"><input id="only-schedule-free" type="checkbox">仅看所选节次均标注空闲的教室</label></div><p id="classroom-summary" class="panel-note" role="status">尚未取得官方教室课表。</p><div id="classroom-results" class="results"></div><button id="more-classrooms" type="button" class="text-button" hidden>再显示24个教室</button></section>
+      <div class="results-heading"><div><p class="eyebrow results-eyebrow">YOUR STUDY SHORTLIST</p><h2 id="discover-title">适合「<span id="scene-name">安静学习</span>」的空间 <span class="result-count" id="result-count">—</span></h2></div><span class="sort-label" id="sort-label">仅推荐已核实匹配项 <span aria-hidden="true">↓</span></span></div>
+      <div class="data-strip"><span><span class="status-dot"></span><span id="dataset-label">正在读取本地资料</span></span><button id="data-button" type="button">了解数据边界 <span aria-hidden="true">↗</span></button></div>
+      <div id="result-announcement" class="sr-only" role="status" aria-live="polite" aria-atomic="true"></div>
+      <div id="results" class="results" aria-busy="true"><div class="empty-state"><span class="empty-symbol" aria-hidden="true">…</span><h3>正在整理学习空间</h3><p>读取本地已核实资料。</p></div></div>
+      <noscript><p class="noscript">请启用 JavaScript 以切换学习场景和读取本地场所数据。网页不会在后台调用大模型或爬虫。</p></noscript>
+      <p class="results-note"><span aria-hidden="true">ⓘ</span> 开放时间为官方公布资料，不代表当前开放；实时空位、实时开放情况均为<span>待核实</span>。</p>
+    </section>
+
+    <section class="principles" aria-labelledby="principles-title"><div class="principles-intro"><p class="eyebrow">LESS GUESSING. MORE TRUST.</p><h2 id="principles-title">少一点猜测，<br>多一点依据。</h2></div><div class="principle"><span class="principle-number">01</span><h3>从官方信息出发</h3><p>每个场所保留官方出处，<br>推荐理由有据可查。</p></div><div class="principle"><span class="principle-number">02</span><h3>不知道，就说不知道</h3><p>未核实的设施标记“待核实”，<br>不把推测当成事实。</p></div><div class="principle"><span class="principle-number">03</span><h3>按需求，不按热度</h3><p>用明确的场景规则匹配，<br>不制造分数与实时空位。</p></div></section>
+  </main>
+  <footer class="site-footer shell"><span><strong>栖学</strong> 为每一种学习，找一处合适的空间。</span><span>按需连接 · 密码不入站 · 本机版</span></footer>
+  <dialog id="detail-dialog" aria-labelledby="dialog-title"><div class="dialog-head"><span class="eyebrow">QIXUE / SPACE NOTES</span><button type="button" id="close-dialog" class="close-button" aria-label="关闭详情">×</button></div><div id="dialog-content"></div><div class="dialog-footer">信息仅作学习规划参考，出发前请以官方通知为准。</div></dialog>
+</body>
+</html>

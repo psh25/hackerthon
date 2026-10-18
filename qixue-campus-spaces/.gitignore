@@ -1,0 +1,15 @@
+node_modules/
+test-results/
+playwright-report/
+.env
+.env.*
+*.log
+.DS_Store
+Thumbs.db
+playwright/.auth/
+.auth/
+browser-profile/
+storage-state*.json
+data/private/
+# 队友独立仓库，保留自己的 .git，不纳入本项目提交。
+/hackerthon/

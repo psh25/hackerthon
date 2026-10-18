@@ -1,0 +1,29 @@
+{
+  "schemaVersion": 1,
+  "source": "https://zhjw.cic.tsinghua.edu.cn/pk.classroomctrl.do",
+  "observedAt": "2026-10-18T14:12:22+08:00",
+  "observedAtPrecision": "window_capture_file_timestamp",
+  "method": "user_authorized_local_window_ocr",
+  "status": "ocr_pending_verification",
+  "notice": "来自用户当前已打开的清华教室查询窗口，经本机 OCR 读取。仅作页面字段和地点候选参考，尚未与结构化页面逐项复核；不参与推荐，不代表允许自习或有空位。容量数值未完成复核，不展示。",
+  "observedFilters": ["周次", "教室类型", "教学楼/教室（模糊查询）", "座位数", "教室管理类型"],
+  "observedWeekLabel": "第5周",
+  "observedDateRangeText": "10.12—10.18（页面文字；年份与学期基准尚待核实）",
+  "observedLegend": ["有课", "考试", "借用", "屏蔽", "空闲", "预约", "已约"],
+  "periodsPerDayObserved": 6,
+  "periodClockTimes": null,
+  "rooms": [
+    { "building": "旧水利馆", "room": "301", "verification": "待核实" },
+    { "building": "旧水利馆", "room": "303", "verification": "待核实" },
+    { "building": "旧水利馆", "room": "304", "verification": "待核实" },
+    { "building": "旧水利馆", "room": "305", "verification": "待核实" },
+    { "building": "旧水利馆", "room": "306", "verification": "待核实" },
+    { "building": "旧水利馆", "room": "307", "verification": "待核实" },
+    { "building": "新水利馆", "room": "300", "verification": "待核实" },
+    { "building": "新水利馆", "room": "301", "verification": "待核实" },
+    { "building": "新水利馆", "room": "303", "verification": "待核实" },
+    { "building": "新水利馆", "room": "304", "verification": "待核实" },
+    { "building": "新水利馆", "room": "306", "verification": "待核实" },
+    { "building": "新水利馆", "room": "307", "verification": "待核实" }
+  ]
+}
