@@ -13,3 +13,5 @@ storage-state*.json
 data/private/
 # 队友独立仓库，保留自己的 .git，不纳入本项目提交。
 /hackerthon/
+/releases/
+/runtime/

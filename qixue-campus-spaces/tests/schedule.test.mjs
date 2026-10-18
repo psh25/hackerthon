@@ -30,13 +30,13 @@ test('推荐仅返回所选连续节次全部空闲的教室，不把未知或�
   const r=recommendClassrooms(scheduleFixture(),needs,now);assert.equal(r.results.length,1);assert.equal(r.results[0].room.name,'可用合成教室');
   assert.equal(r.results[0].extraFreePeriods,3);assert.equal(r.results[0].slots.length,2);assert.match(r.results[0].caveats.join('；'),/供电设施：待核实/);
 });
-test('没有选择节次时明确提示缺失，不猜钟点映射',()=>{
+test('手动模式没有选择节次时明确提示切换自动或手选',()=>{
   const r=recommendClassrooms(scheduleFixture(),{...needs,periodStart:null,periodEnd:null,startTime:'14:00',duration:60},now);
   assert.equal(r.needsPeriods,true);assert.equal(r.results.length,0);assert.match(r.message,/钟点/);
 });
 test('反向节次拒绝，未知状态不混入结果，无结果返回可操作提示',()=>{
   assert.equal(recommendClassrooms(scheduleFixture(),{...needs,periodStart:5,periodEnd:2},now).needsPeriods,true);
-  const s=scheduleFixture();s.records.shift();const r=recommendClassrooms(s,needs,now);assert.deepEqual(r.results,[]);assert.match(r.message,/调整节次/);
+  const s=scheduleFixture();s.records.shift();const r=recommendClassrooms(s,needs,now);assert.deepEqual(r.results,[]);assert.match(r.message,/调整时间或节次/);
 });
 test('推荐按后续连续空闲节次优先，名称稳定排序，不改输入',()=>{
   const s=scheduleFixture();const second=structuredClone(s.records[0]);second.name='另一合成教室';second.periods.find(x=>x.dayIndex===6&&x.period===4).status='有课';s.records.push(second);

@@ -43,6 +43,7 @@ try {
   const page = await newPage();
   await page.goto(base);
   await page.locator('#results[aria-busy="false"]').waitFor();
+  await page.locator('#need-time-mode').selectOption('periods');
   await check('生产空数据：明确待补充，无虚构卡片', async () => {
     assert.equal(await page.locator('.place-card').count(), 0);
     assert.match(await page.locator('#dataset-label').innerText(), /已核实场所 0/);
@@ -63,10 +64,10 @@ try {
     await page.locator('#need-duration').selectOption('90');
     await page.locator('#need-power').check();
     await page.getByRole('button', { name: '按我的需求推荐' }).click();
-    assert.match(await page.locator('#needs-message').innerText(), /请选择起止官方节次/);
+    assert.match(await page.locator('#needs-message').innerText(), /手动模式/);
     assert.match(await page.locator('#sort-label').innerText(), /已核实偏好覆盖率/);
     const stored = await page.evaluate(() => JSON.parse(localStorage.getItem('qixue.daily-needs.v1')));
-    assert.deepEqual(Object.keys(stored).sort(), ['bufferMinutes', 'date', 'duration', 'periodEnd', 'periodStart', 'power', 'scenario', 'startTime']);
+    assert.deepEqual(Object.keys(stored).sort(), ['bufferMinutes', 'date', 'duration', 'periodEnd', 'periodStart', 'power', 'scenario', 'startTime','timeMode']);
     assert.equal(stored.duration, 90); assert.equal(stored.power, true);
     assert.equal(await page.locator('.place-card').count(), 0);
   });
@@ -80,25 +81,26 @@ try {
     await page.locator('.classroom-reference summary').click();
   });
   await check('官方课表候选：真实快照单独展示，时间与来源边界明确', async () => {
+    const cards=page.locator('#classroom-results .classroom-card');
     const snapshot = await (await page.request.get(`${base}/api/classrooms/observation`)).json();
     if (!snapshot.records?.length) { assert.equal(await page.locator('#classroom-results .classroom-card').count(), 0); return; }
     const observed = snapshot.days?.find(day => day.date === '2026-10-18');
     assert.ok(observed); assert.equal(snapshot.records.length, 423); assert.equal(snapshot.truncated, false);
     if (!snapshot.cachePolicy?.usable) {
-      assert.equal(await page.locator('.classroom-card').count(), 0); return;
+      assert.equal(await cards.count(), 0); return;
     }
-    await page.locator('.classroom-card').first().waitFor();
-    assert.equal(await page.locator('.classroom-card').count(), 24);
+    await cards.first().waitFor();
+    assert.equal(await cards.count(), 24);
     assert.match(await page.locator('#classroom-summary').innerText(), /本周缓存|采集于/);
-    assert.match(await page.locator('.classroom-card').first().innerText(), /非自习许可/);
-    assert.equal(await page.locator('.classroom-card').first().locator('a').getAttribute('href'), 'https://zhjw.cic.tsinghua.edu.cn/pk.classroomctrl.do');
-    await page.locator('#more-classrooms').click(); assert.equal(await page.locator('.classroom-card').count(), 48);
+    assert.match(await cards.first().innerText(), /非自习许可/);
+    assert.equal(await cards.first().locator('a').getAttribute('href'), 'https://zhjw.cic.tsinghua.edu.cn/pk.classroomctrl.do');
+    await page.locator('#more-classrooms').click(); assert.equal(await cards.count(), 48);
     await page.locator('#classroom-period').selectOption('6'); await page.locator('#only-schedule-free').check();
     const count = snapshot.records.filter(room => room.periods.some(slot => slot.dayIndex === 6 && slot.period === 6 && slot.status === '空闲')).length;
     assert.match(await page.locator('#classroom-summary').innerText(), new RegExp(`${count}个课表候选`));
-    assert.equal(await page.locator('.classroom-card .schedule-other').count(), 0);
+    assert.equal(await cards.locator('.schedule-other').count(), 0);
     await page.locator('#need-date').fill('2026-11-01'); await page.locator('#need-date').dispatchEvent('change');
-    assert.match(await page.locator('#classroom-summary').innerText(), /不覆盖所选日期/); assert.equal(await page.locator('.classroom-card').count(), 0);
+    assert.match(await page.locator('#classroom-summary').innerText(), /不覆盖所选日期/); assert.equal(await cards.count(), 0);
     await page.locator('#need-date').fill('2026-10-18'); await page.locator('#need-date').dispatchEvent('change');
     await page.locator('#only-schedule-free').uncheck(); await page.locator('#classroom-period').selectOption('all');
   });
@@ -126,7 +128,7 @@ try {
       const data=structuredClone(source);if(mode==='expired')data.observedAt='2026-01-01T00:00:00Z';
       return route.fulfill({status:200,contentType:'application/json',body:JSON.stringify(data)});
     });
-    await p.goto(base);await p.locator('#need-period-start').selectOption('2');await p.locator('#need-period-end').selectOption('3');
+    await p.goto(base);await p.locator('#need-time-mode').selectOption('periods');await p.locator('#need-period-start').selectOption('2');await p.locator('#need-period-end').selectOption('3');
     await p.getByRole('button',{name:'按我的需求推荐'}).click();
     await p.waitForFunction(()=>document.querySelector('#study-summary').textContent.includes('没有全部标为'));
     assert.equal(await p.locator('#study-results .classroom-card').count(),0);
@@ -144,7 +146,7 @@ try {
     await page.locator('#need-date').fill('2026-10-18');await page.locator('#need-time').fill('15:00');
   });
   await check('动态日程冲突暂停推荐，本次不参加可恢复，教室占用不被改写',async()=>{
-    await page.locator('#need-date').fill('2026-10-18');await page.locator('#need-time').fill('15:00');await page.locator('#need-duration').selectOption('60');
+    await page.locator('#need-time-mode').selectOption('periods');await page.locator('#need-date').fill('2026-10-18');await page.locator('#need-time').fill('15:00');await page.locator('#need-duration').selectOption('60');
     await page.locator('#need-period-start').selectOption('2');await page.locator('#need-period-end').selectOption('3');
     await page.locator('#agenda-event-date').fill('2026-10-18');await page.locator('#agenda-title').fill('合成临时办事');
     await page.locator('#agenda-start').fill('15:10');await page.locator('#agenda-end').fill('15:40');await page.locator('#agenda-kind').selectOption('event');

@@ -1,0 +1,7 @@
+尚未找到 Node.js，程序没有启动。
+
+首次使用请从 https://nodejs.org/ 安装 Node.js LTS（需20或以上，包含npm）。
+安装完成后重新双击 start.cmd 即可，不需要输入启动命令。
+不要直接打开 index.html，也不要在压缩包里运行。
+
+这是一次性准备。完整步骤与故障排查见 README.md 和 docs/START-HERE.md。

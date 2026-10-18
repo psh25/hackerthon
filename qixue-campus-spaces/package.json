@@ -1,15 +1,20 @@
 {
   "name": "qixue-campus-spaces",
-  "version": "0.5.1",
+  "version": "0.8.0",
   "private": true,
   "type": "module",
   "description": "校园学习空间发现器：只推荐有官方证据的场所",
   "scripts": {
-    "start": "node server.mjs",
+    "start": "node scripts/launch.mjs",
+    "start:server": "node server.mjs",
+    "setup:official": "node scripts/setup-official.mjs",
     "test": "node --test tests/*.test.mjs",
     "test:browser": "node tests/browser-check.mjs",
     "test:connection-browser": "node tests/connection-browser-check.mjs",
-    "check": "node --check server.mjs && node --check js/app.js && node --check js/recommend.js && node --check js/daily.js && node --check js/connection.js && node --check lib/official-connection.mjs && node --check lib/official-pages.mjs && node --check lib/classroom.mjs && node --check js/classrooms.js && node --check js/schedule.js && node --check js/agenda.js && node --check js/planner.js && node --check tests/connection-browser-check.mjs"
+    "test:time-browser": "node tests/time-browser-check.mjs",
+    "test:library-browser": "node tests/library-browser-check.mjs",
+    "test:ui": "node tests/workspace-browser-check.mjs",
+    "check": "node --check server.mjs && node --check scripts/launch.mjs && node --check scripts/setup-official.mjs && node --check lib/runtime.mjs && node --check lib/library.mjs && node --check js/library-policy.js && node --check js/libraries.js && node --check tests/library-browser-check.mjs && node --check lib/app-info.mjs && node --check js/app.js && node --check js/recommend.js && node --check js/daily.js && node --check js/connection.js && node --check lib/official-connection.mjs && node --check lib/official-pages.mjs && node --check lib/classroom.mjs && node --check js/classrooms.js && node --check js/campus.js && node --check js/campus-map.js && node --check js/workspace.js && node --check js/schedule.js && node --check js/agenda.js && node --check js/planner.js && node --check js/period-times.js && node --check js/period-ui.js && node --check tests/connection-browser-check.mjs && node --check tests/time-browser-check.mjs"
   },
-  "engines": { "node": ">=18.18" }
+  "engines": { "node": ">=20" }
 }

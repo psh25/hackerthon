@@ -19,9 +19,15 @@ test('本地 HTTP 服务：资源、健康检查、数据与访问边界', async
     assert.equal(response.headers.get('cache-control'), 'no-store');
   });
   await t.test('CSS 与 ES 模块的 MIME 正确', async () => {
-    for (const [path, type] of [['/styles.css', 'text/css'], ['/js/app.js', 'text/javascript'], ['/js/recommend.js', 'text/javascript']]) {
+    for (const [path, type] of [['/styles.css', 'text/css'], ['/workspace.css', 'text/css'], ['/js/app.js', 'text/javascript'], ['/js/recommend.js', 'text/javascript'], ['/js/campus-map.js', 'text/javascript']]) {
       const response = await fetch(base + path); assert.equal(response.status, 200); assert.ok(response.headers.get('content-type').startsWith(type));
     }
+  });
+  await t.test('校园地图资源可读且保持图片 MIME', async () => {
+    const response = await fetch(`${base}/assets/campus-map.jpg`);
+    assert.equal(response.status, 200);
+    assert.ok(response.headers.get('content-type').startsWith('image/jpeg'));
+    assert.ok((await response.arrayBuffer()).byteLength > 100000);
   });
   await t.test('HEAD 不返回正文', async () => { const response = await fetch(base, { method: 'HEAD' }); assert.equal(response.status, 200); assert.equal(await response.text(), ''); });
   await t.test('未知资源和内部文件不可访问', async () => {

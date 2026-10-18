@@ -83,7 +83,7 @@ export async function inspectClassroom(page) {
   result.truncated = result.tables.some(table => table.truncated);
   if (result.records.length) {
     result.status = 'schedule_observed';
-    result.message = `已读取 ${result.records.length} 个教室的官方课表状态。空闲不等于允许自习或实时有座；节次的钟点时间尚待核实。${result.truncated ? '结果存在截断，不能当作完整列表。' : ''}`;
+    result.message = `已读取 ${result.records.length} 个教室的官方课表状态。空闲不等于允许自习或实时有座；钟点映射另据用户提供的节次图片，课间状态待核实。${result.truncated ? '结果存在截断，不能当作完整列表。' : ''}`;
   }
   return result;
 }

@@ -1,4 +1,5 @@
 import{AGENDA_KEY,chinaNow,validateAgenda,validateEvent,attendanceException,studyWindow}from'./agenda.js';
+import { currentPeriod, periodLabel } from './period-times.js';
 const $=selector=>document.querySelector(selector);
 let events=[],storeError='';
 try{const saved=localStorage.getItem(AGENDA_KEY);if(saved)events=validateAgenda(JSON.parse(saved));}catch{storeError='本机已有日程无法读取；为避免覆盖未保存资料，请先导出或检查浏览器存储。';}
@@ -25,9 +26,9 @@ function showWindow(){
   const fields={date:$('#need-date').value,startTime:$('#need-time').value,duration:Number($('#need-duration').value),bufferMinutes:Number($('#travel-buffer').value)};
   try{const plan=studyWindow(events,fields);$('#personal-window').textContent=plan.conflicts.length?`计划与${plan.conflicts.map(e=>`「${e.title}」`).join('、')}冲突（含前后${plan.bufferMinutes}分钟自设预留）。请改时间，或只对确实不参加的本次日程设置例外。`:`已录入日程中无冲突；从所选开始时刻起，到下一项已录入事务前最多${plan.availableMinutes}分钟${plan.next?`，下一项「${plan.next.title}」${plan.next.start}开始`:'；今天尚无下一项已录入事务'}。这不是已同步官方个人课表。`;}catch{$('#personal-window').textContent='请填写有效的同日学习时段和预留分钟。';}
 }
-function tick(){const now=chinaNow();$('#system-clock').textContent=`${now.date} ${now.time}:${now.seconds} · 上海时间`;$('#clock-note').textContent='读取本机系统时钟，不是学校授时；系统时间不准确时请先校准。';}
+function tick(){const now=chinaNow();const period=currentPeriod(now.time);$('#system-clock').textContent=`${now.date} ${now.time}:${now.seconds} · 上海时间`;$('#clock-note').textContent=`${period?`按图片时间表，此刻处于${periodLabel(period.period)}`:'此刻不在图片列明的教学时段内，不能据此认定教室空闲'}。读取本机系统时钟，不是学校授时；系统时间不准确时请先校准。`;}
 tick();setInterval(tick,1000);
-$('#use-now').addEventListener('click',()=>{const now=chinaNow();$('#need-date').value=now.date;$('#need-time').value=now.time;$('#agenda-event-date').value=now.date;$('#need-date').dispatchEvent(new Event('change'));$('#need-time').dispatchEvent(new Event('change'));$('#needs-message').textContent='已使用本机当前日期和时间；钟点到节次尚待核实，请显式选择官方起止节次。';});
+$('#use-now').addEventListener('click',()=>{const now=chinaNow();$('#need-date').value=now.date;$('#need-time').value=now.time;$('#need-time-mode').value='clock';$('#agenda-event-date').value=now.date;$('#need-time-mode').dispatchEvent(new Event('change'));$('#need-date').dispatchEvent(new Event('change'));$('#need-time').dispatchEvent(new Event('change'));$('#needs-message').textContent='已使用本机当前日期和时间，并切换为自动匹配节次；请点击推荐，未覆盖的课间/午休仍待核实。';});
 $('#agenda-event-date').value=chinaNow().date;
 $('#agenda-form').addEventListener('submit',event=>{
   event.preventDefault();try{

@@ -1,10 +1,7 @@
-import { createRequire } from 'node:module';
-import { homedir } from 'node:os';
-import { join } from 'node:path';
-import { existsSync } from 'node:fs';
 import { stat, mkdir, writeFile, rename, unlink } from 'node:fs/promises';
 import { CLASSROOM_URL, isClassroomUrl } from './classroom.mjs';
 import { detectConnection, portalPage, classroomWindow } from './official-pages.mjs';
+import { loadPlaywright, browserExecutable, runtimeStatus } from './runtime.mjs';
 
 async function readClassroom(page) {
   // 仅重载受版本控制的本地解析模块，方便校准官方页面，无需重启认证窗口。
@@ -32,12 +29,6 @@ export function officialUrl(value) {
   catch { return false; }
 }
 
-function loadPlaywright() {
-  try { return createRequire(import.meta.url)('playwright'); } catch {}
-  const modules = process.env.BUNDLED_NODE_MODULES || join(homedir(), '.cache', 'codex-runtimes', 'codex-primary-runtime', 'dependencies', 'node', 'node_modules');
-  return createRequire(join(modules, '..', 'package.json'))('playwright');
-}
-
 export class OfficialConnection {
   constructor() {
     this.state = 'disconnected'; this.browser = null; this.page = null; this.context = null;
@@ -61,10 +52,7 @@ export class OfficialConnection {
     let browser;
     try {
       const { chromium } = loadPlaywright();
-      const executablePath = process.env.BROWSER_PATH || [
-        'C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe',
-        'C:/Program Files/Google/Chrome/Application/chrome.exe'
-      ].find(path => existsSync(path));
+      const executablePath = browserExecutable();
       browser = await chromium.launch({ headless: false, ...(executablePath ? { executablePath } : {}), timeout: 25000 });
       if (generation !== this.generation) { await browser.close(); return this.status(); }
       this.browser = browser;
@@ -94,7 +82,7 @@ export class OfficialConnection {
       await this.checkLogin();
     } catch {
       if (generation === this.generation) {
-        this.state = 'error'; this.message = '无法打开官方窗口。请检查本机 Playwright、浏览器、校园网络与门户连通性；未获取动态资源。';
+        this.state = 'error'; this.message = runtimeStatus().officialReady ? '无法打开官方窗口。请检查浏览器、校园网络与门户连通性；未获取动态资源。' : runtimeStatus().message;
         this.resourceLinks = []; this.expires = null; clearTimeout(this.timer);
         if (browser) await browser.close().catch(() => {});
         this.browser = null; this.context = null; this.page = null;

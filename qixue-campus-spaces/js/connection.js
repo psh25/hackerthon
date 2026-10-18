@@ -1,5 +1,6 @@
 import { shanghaiDate, validateNeeds } from './daily.js';
 import { chinaNow } from './agenda.js';
+import { initializeTimeSelection, syncTimeSelection } from './period-ui.js';
 
 const $ = selector => document.querySelector(selector);
 const STORE = 'qixue.daily-needs.v1';
@@ -91,7 +92,7 @@ async function action(path) {
   }
 }
 
-const initial = { scenario: 'quiet', date: shanghaiDate(), startTime: chinaNow().time, duration: 60, power: false };
+const initial = { scenario: 'quiet', date: shanghaiDate(), startTime: chinaNow().time, duration: 60, power: false, timeMode:'clock' };
 try {
   const saved = JSON.parse(localStorage.getItem(STORE));
   if (saved) { validateNeeds(saved); Object.assign(initial, saved, { date: shanghaiDate() }); }
@@ -103,15 +104,18 @@ $('#need-power').checked = initial.power;
 $('#need-period-start').value=initial.periodStart?String(initial.periodStart):'';
 $('#need-period-end').value=initial.periodEnd?String(initial.periodEnd):'';
 $('#travel-buffer').value=String(initial.bufferMinutes??10);
+$('#need-time-mode').value=initial.timeMode||'clock';
+initializeTimeSelection();
 // 场景由原有四个按钮决定；不会缓存账号、密码或 Cookie。
 $('#daily-needs').addEventListener('submit', event => {
   event.preventDefault();
   try {
     const scenario = document.querySelector('[data-scenario][aria-pressed="true"]').dataset.scenario;
-    const needs = validateNeeds({ scenario, date: $('#need-date').value, startTime: $('#need-time').value, duration: Number($('#need-duration').value), power: $('#need-power').checked, periodStart:$('#need-period-start').value?Number($('#need-period-start').value):null,periodEnd:$('#need-period-end').value?Number($('#need-period-end').value):null,bufferMinutes:Number($('#travel-buffer').value) });
+    syncTimeSelection();
+    const needs = validateNeeds({ scenario, date: $('#need-date').value, startTime: $('#need-time').value, duration: Number($('#need-duration').value), power: $('#need-power').checked, timeMode:$('#need-time-mode').value,periodStart:$('#need-period-start').value?Number($('#need-period-start').value):null,periodEnd:$('#need-period-end').value?Number($('#need-period-end').value):null,bufferMinutes:Number($('#travel-buffer').value) });
     try { localStorage.setItem(STORE, JSON.stringify(needs)); } catch {}
     window.dispatchEvent(new CustomEvent('qixue:needs', { detail: needs }));
-    $('#needs-message').textContent = needs.periodStart ? '已提交：推荐结果显示在下方，直接读取本周缓存。钟点时间与场景设施仍待核实，不作为已满足条件。' : '请选择起止官方节次，结果区已说明缺失条件；钟点到节次对应尚未核实，不能自动换算。';
+    $('#needs-message').textContent = needs.timeMode==='clock' ? '已按开始时间和时长自动匹配相交节次；下方显示推荐及未覆盖时间，课间不自动视为空闲。' : '已按手选节次提交；手动模式不使用钟点筛选教室，钟点仅用于日程冲突检查。';
   } catch (error) {
     $('#needs-message').textContent = error.message;
     window.dispatchEvent(new CustomEvent('qixue:needs-invalid',{detail:error.message}));
@@ -128,6 +132,14 @@ window.addEventListener('pageshow', () => { if (poll) clearInterval(poll); poll 
 window.addEventListener('online', updateStatus);
 document.addEventListener('visibilitychange', () => { if (!document.hidden) updateStatus(); });
 updateStatus();
+fetch('/api/runtime', { cache: 'no-store' }).then(response => {
+  if (!response.ok) throw new Error('Runtime unavailable');
+  return response.json();
+}).then(runtime => {
+  $('#runtime-message').textContent = runtime.message;
+}).catch(() => {
+  $('#runtime-message').textContent = '未能检查查询组件。首次查询前可运行 setup-official.cmd；请使用 start.cmd 启动完整项目。';
+});
 fetch('/data/classroom-reference.json', { cache: 'no-store' }).then(response => {
   if (!response.ok) throw new Error('Reference unavailable'); return response.json();
 }).then(reference => {

@@ -1,3 +1,4 @@
+import { matchClockWindow, periodLabel } from './period-times.js';
 export const CLASSROOM_SOURCE = 'https://zhjw.cic.tsinghua.edu.cn/pk.classroomctrl.do';
 export const WEEK_MS = 7 * 86400000;
 export function chinaDate(value = new Date()) {
@@ -35,8 +36,14 @@ export function cachePolicy(snapshot, requestedDate, now = new Date()) {
 export function recommendClassrooms(snapshot, needs, now = new Date()) {
   const policy = cachePolicy(snapshot, needs.date, now);
   if (!policy.usable) return { policy, results:[], message:policy.message };
-  const start = needs.periodStart, end = needs.periodEnd;
-  if (!Number.isInteger(start) || !Number.isInteger(end) || start < 1 || end > 6 || end < start) return { policy, results:[], message:'请选择起止官方节次（1–6）；钟点对应尚未核实，不能自动从开始时间推算。', needsPeriods:true };
+  let timing = null;
+  if (needs.timeMode === 'clock') {
+    try { timing = matchClockWindow(needs.startTime, needs.duration); }
+    catch(error) { return {policy,results:[],message:error.message,needsPeriods:true}; }
+    if (!timing.periods.length) return {policy,results:[],timing,needsPeriods:true,message:`${timing.startTime}–${timing.endTime}完全位于图片列明的教学时段之外（课间、午休或早晚时段）；该段教室状态待核实，不能据此推荐空闲教室。`};
+  }
+  const start = timing ? timing.periodStart : needs.periodStart, end = timing ? timing.periodEnd : needs.periodEnd;
+  if (!Number.isInteger(start) || !Number.isInteger(end) || start < 1 || end > 6 || end < start) return { policy, results:[], message:'手动模式请选择起止官方节次（1–6），或切换为按钟点自动匹配。', needsPeriods:true };
   const dayIndex = snapshot.days.findIndex(day => day.date === needs.date);
   const results = snapshot.records.flatMap(room => {
     const slots = room.periods.filter(slot => slot.dayIndex === dayIndex && slot.period >= start && slot.period <= end).sort((a,b)=>a.period-b.period);
@@ -46,7 +53,8 @@ export function recommendClassrooms(snapshot, needs, now = new Date()) {
       if (room.periods.find(slot=>slot.dayIndex===dayIndex && slot.period===period)?.status !== '空闲') break;
       consecutive++;
     }
-    return [{ room, slots, extraFreePeriods:consecutive, timetableCoverage:100, reason:`所选第${start}–${end}节均被官方课表标为“空闲”${consecutive ? `，之后另有${consecutive}个连续空闲节次` : ''}。`, caveats:[ '允许自习：待核实', `${({quiet:'安静程度',group:'讨论许可',short:'临时进入要求',power:'供电设施'})[needs.scenario] || '场景设施'}：待核实`, ...(needs.power && needs.scenario!=='power' ? ['供电设施：待核实'] : []), '实时空位：待核实' ] }];
+    const reason = timing ? `${timing.startTime}–${timing.endTime}涉及${timing.periods.map(periodLabel).join('、')}，这些节次均被官方周课表标为“空闲”。${timing.fullyCovered ? '所选钟点均落在这些教学时段内。' : `其中${timing.uncoveredMinutes}分钟不在教学时段内，状态待核实；不表示整个学习窗口连续空闲。`}` : `所选第${start}–${end}节均被官方课表标为“空闲”${consecutive ? `，之后另有${consecutive}个连续编号的空闲节次（不含课间保证）` : ''}。`;
+    return [{ room, slots, extraFreePeriods:consecutive, timetableCoverage:timing ? timing.coverage : 100, timing, reason, caveats:[...(timing?.gaps.length ? [`未覆盖时间：${timing.gaps.map(gap=>`${gap.start}–${gap.end}`).join('、')}（待核实）`] : []), '允许自习：待核实', `${({quiet:'安静程度',group:'讨论许可',short:'临时进入要求',power:'供电设施'})[needs.scenario] || '场景设施'}：待核实`, ...(needs.power && needs.scenario!=='power' ? ['供电设施：待核实'] : []), '实时空位：待核实' ] }];
   }).sort((a,b)=>b.extraFreePeriods-a.extraFreePeriods || a.room.name.localeCompare(b.room.name,'zh-CN'));
-  return { policy, results, message:results.length ? `找到${results.length}个课表条件匹配候选，按后续连续空闲节次、名称排序；这不是完整场景匹配分或自习许可。` : '所选日期与节次没有全部标为“空闲”的教室，请调整节次；未知状态不算空闲。' };
+  return { policy, results, timing, message:results.length ? `找到${results.length}个${timing?.gaps.length ? '包含待核实时段的' : ''}课表条件匹配候选，按后续空闲节次数、名称排序；这不是自习许可或实时座位。${timing?.gaps.length ? `课间/午休等${timing.uncoveredMinutes}分钟未覆盖，不能确认全程空闲。` : ''}` : '所选日期与节次没有全部标为“空闲”的教室，请调整时间或节次；未知状态不算空闲。' };
 }

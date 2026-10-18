@@ -12,8 +12,9 @@ export function validateNeeds(needs) {
   if (!/^([01]\d|2[0-3]):[0-5]\d$/.test(needs.startTime)) throw new Error('请选择有效的开始时间。');
   if (!Number.isInteger(needs.duration) || needs.duration < 15 || needs.duration > 480) throw new Error('学习时长应在 15–480 分钟之间。');
   if (typeof needs.power !== 'boolean') throw new Error('供电偏好格式不正确。');
+  if (needs.timeMode != null && !['clock','periods'].includes(needs.timeMode)) throw new Error('请选择有效的时间匹配模式。');
   if (needs.bufferMinutes != null && (!Number.isInteger(needs.bufferMinutes) || needs.bufferMinutes < 0 || needs.bufferMinutes > 120)) throw new Error('事务预留时间应为0–120分钟的整数。');
-  if (needs.periodStart != null || needs.periodEnd != null) {
+  if (needs.timeMode !== 'clock' && (needs.periodStart != null || needs.periodEnd != null)) {
     if (!Number.isInteger(needs.periodStart) || !Number.isInteger(needs.periodEnd) || needs.periodStart < 1 || needs.periodEnd > 6 || needs.periodEnd < needs.periodStart) throw new Error('请选择有效的起止节次（1–6，结束不早于开始）。');
   }
   if (Number(needs.startTime.slice(0, 2)) * 60 + Number(needs.startTime.slice(3)) + needs.duration > 1440) throw new Error('本版仅支持当天内的学习时段，请缩短时长或提前开始时间。');

@@ -4,6 +4,9 @@ import { pathToFileURL } from 'node:url';
 import { randomBytes, timingSafeEqual } from 'node:crypto';
 import { OfficialConnection } from './lib/official-connection.mjs';
 import { cachePolicy, chinaDate } from './js/schedule.js';
+import { APP_VERSION, WORKSPACE_ID } from './lib/app-info.mjs';
+import { runtimeStatus } from './lib/runtime.mjs';
+import { LibraryService } from './lib/library.mjs';
 
 const ROOT = new URL('./', import.meta.url);
 const ROUTES = new Map([
@@ -18,11 +21,20 @@ const ROUTES = new Map([
   ['/js/schedule.js', ['js/schedule.js', 'text/javascript; charset=utf-8']],
   ['/js/agenda.js', ['js/agenda.js', 'text/javascript; charset=utf-8']],
   ['/js/planner.js', ['js/planner.js', 'text/javascript; charset=utf-8']],
+  ['/js/period-times.js', ['js/period-times.js', 'text/javascript; charset=utf-8']],
+  ['/js/period-ui.js', ['js/period-ui.js', 'text/javascript; charset=utf-8']],
+  ['/js/libraries.js', ['js/libraries.js', 'text/javascript; charset=utf-8']],
+  ['/js/library-policy.js', ['js/library-policy.js', 'text/javascript; charset=utf-8']],
+  ['/js/campus.js', ['js/campus.js', 'text/javascript; charset=utf-8']],
+  ['/js/workspace.js', ['js/workspace.js', 'text/javascript; charset=utf-8']],
+  ['/js/campus-map.js', ['js/campus-map.js', 'text/javascript; charset=utf-8']],
+  ['/workspace.css', ['workspace.css', 'text/css; charset=utf-8']],
+  ['/assets/campus-map.jpg', ['assets/campus-map.jpg', 'image/jpeg']],
   ['/data/places.json', ['data/places.json', 'application/json; charset=utf-8']],
   ['/data/classroom-reference.json', ['data/classroom-reference.json', 'application/json; charset=utf-8']]
 ]);
 
-export function createAppServer({ connection = new OfficialConnection(), readSnapshot = async () => JSON.parse(await readFile(new URL('data/private/classroom-snapshot.json', ROOT), 'utf8')) } = {}) {
+export function createAppServer({ connection = new OfficialConnection(), library = new LibraryService(), readSnapshot = async () => JSON.parse(await readFile(new URL('data/private/classroom-snapshot.json', ROOT), 'utf8')) } = {}) {
   const token = randomBytes(32).toString('hex');
   const server = http.createServer(async (request, response) => {
     response.setHeader('X-Content-Type-Options', 'nosniff');
@@ -36,12 +48,13 @@ export function createAppServer({ connection = new OfficialConnection(), readSna
     const host = request.headers.host || '';
     const origin = `http://${host}`;
     if (!/^(127\.0\.0\.1|localhost)(:\d{1,5})?$/.test(host) || (request.headers.origin && request.headers.origin !== origin) || request.headers['sec-fetch-site'] === 'cross-site') return send(403, 'application/json; charset=utf-8', JSON.stringify({ error: 'Forbidden', message: '仅允许本机同源访问。' }));
-    const connectionAction = /^\/api\/connection\/(start|refresh|disconnect|openClassrooms|inspectClassrooms|queryClassrooms)$/.test(request.url);
+    const connectionAction = /^\/api\/connection\/(start|refresh|disconnect|openClassrooms|inspectClassrooms|queryClassrooms)$/.test(request.url) || request.url === '/api/libraries/refresh';
     if (connectionAction && request.method === 'POST') {
       const supplied = request.headers['x-qixue-token'];
       if (typeof supplied !== 'string' || !/^[a-f0-9]{64}$/.test(supplied) || !timingSafeEqual(Buffer.from(supplied), Buffer.from(token))) return send(403, 'application/json; charset=utf-8', JSON.stringify({ error: 'Forbidden', message: '请刷新页面后再操作。' }));
       if (Number(request.headers['content-length'] || 0) > 0 || request.headers['transfer-encoding']) return send(400, 'application/json; charset=utf-8', JSON.stringify({ error: 'Body not accepted', message: '本服务不接收账号、密码或任何请求正文。' }));
       try {
+        if (request.url === '/api/libraries/refresh') return send(200, 'application/json; charset=utf-8', JSON.stringify(await library.get({ force: true })));
         const action = request.url.split('/').at(-1);
         const result = await connection[action]();
         return send(200, 'application/json; charset=utf-8', JSON.stringify(result));
@@ -55,6 +68,10 @@ export function createAppServer({ connection = new OfficialConnection(), readSna
     try { pathname = new URL(request.url, 'http://127.0.0.1').pathname; }
     catch { return send(400, 'application/json; charset=utf-8', JSON.stringify({ error: 'Bad request' })); }
     if (pathname === '/api/session') return send(200, 'application/json; charset=utf-8', JSON.stringify({ token }));
+    if (pathname === '/api/libraries/observation') {
+      try { return send(200, 'application/json; charset=utf-8', JSON.stringify(await library.get())); }
+      catch { return send(503, 'application/json; charset=utf-8', JSON.stringify({ error: 'Unavailable', message: '图书馆读取暂不可用；教室数据独立处理。' })); }
+    }
     if (pathname === '/api/connection/status') {
       try { return send(200, 'application/json; charset=utf-8', JSON.stringify(await connection.checkLogin())); }
       catch { return send(503, 'application/json; charset=utf-8', JSON.stringify({ error: 'Unavailable' })); }
@@ -70,7 +87,8 @@ export function createAppServer({ connection = new OfficialConnection(), readSna
       const syncFailed = observation && !observation.records?.length && /failed|login_required/.test(observation.status);
       return send(200, 'application/json; charset=utf-8', JSON.stringify({ ...result, cachePolicy:policy, message:policy.message, syncWarning:syncFailed ? '最近一次在线同步未成功；此处仍为此前缓存，未刷新采集时间。' : null }));
     }
-    if (pathname === '/api/health') return send(200, 'application/json; charset=utf-8', JSON.stringify({ status: 'ok', app: 'qixue-campus-spaces', version: '0.5.1', realtimeData: false, resourceAdapter: 'classroom_schedule_weekly_cache', personalSchedule:'manual_local_only', semesterImport:'not_configured', libraryAdapter: 'not_configured', campusRouting:'not_configured' }));
+    if (pathname === '/api/runtime') return send(200, 'application/json; charset=utf-8', JSON.stringify(runtimeStatus()));
+    if (pathname === '/api/health') return send(200, 'application/json; charset=utf-8', JSON.stringify({ status: 'ok', app: 'qixue-campus-spaces', version: APP_VERSION, workspaceId: WORKSPACE_ID, realtimeData: false, resourceAdapter: 'classroom_schedule_weekly_cache', periodClockTimes:'user_provided_image', personalSchedule:'manual_local_only', semesterImport:'not_configured', libraryAdapter: 'official_public_today_remaining', campusRouting:'not_configured' }));
     const route = ROUTES.get(pathname);
     if (!route) return send(404, 'application/json; charset=utf-8', JSON.stringify({ error: 'Not found' }));
     try { send(200, route[1], await readFile(new URL(route[0], ROOT))); }
