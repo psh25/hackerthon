@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>清华大学图书馆 · 座位实时看板</title>
+<meta name="description" content="清华大学图书馆各分馆座位使用情况实时可视化看板" />
+<meta name="color-scheme" content="dark" />
+<link rel="stylesheet" href="/assets/style.css" />
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%23e2414f'/%3E%3Cpath d='M9 10h14v3H9zm0 6h14v3H9zm0 6h9v3H9z' fill='%23fff'/%3E%3C/svg%3E" />
+</head>
+<body>
+<div class="bg-glow" aria-hidden="true"></div>
+
+<header class="topbar">
+  <div class="brand">
+    <div class="brand-mark" aria-hidden="true">
+      <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M4 19V6.5A2.5 2.5 0 0 1 6.5 4H19v15" />
+        <path d="M4 19a2 2 0 0 0 2 2h13" />
+        <path d="M8 8h7M8 12h7M8 16h4" />
+      </svg>
+    </div>
+    <div class="brand-text">
+      <h1>清华大学图书馆 · 座位实时看板</h1>
+      <p>各分馆座位使用情况 · 数据每 <b id="pollLabel">30</b> 秒自动采集</p>
+    </div>
+  </div>
+
+  <div class="topbar-right">
+    <div class="live-chip" id="liveChip" data-state="loading">
+      <span class="live-dot"></span>
+      <span id="liveText">连接中…</span>
+    </div>
+    <div class="clock">
+      <span id="clockTime">--:--:--</span>
+      <small id="clockDate">--</small>
+    </div>
+    <div class="actions">
+      <label class="switch" title="自动刷新开关">
+        <input type="checkbox" id="autoToggle" checked />
+        <span class="switch-track"><span class="switch-thumb"></span></span>
+        <span class="switch-label">自动刷新</span>
+      </label>
+      <div class="countdown" title="距离下次数据更新">
+        <svg viewBox="0 0 36 36" width="26" height="26">
+          <circle cx="18" cy="18" r="15.5" fill="none" stroke="rgba(255,255,255,.12)" stroke-width="3" />
+          <circle id="cdRing" cx="18" cy="18" r="15.5" fill="none" stroke="#e2414f" stroke-width="3"
+                  stroke-linecap="round" stroke-dasharray="97.4" stroke-dashoffset="0"
+                  transform="rotate(-90 18 18)" />
+        </svg>
+        <span id="cdText">30s</span>
+      </div>
+      <button class="btn-refresh" id="refreshBtn" title="立即刷新">
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 12a9 9 0 1 1-2.64-6.36" />
+          <path d="M21 3v6h-6" />
+        </svg>
+        <span>刷新</span>
+      </button>
+    </div>
+  </div>
+</header>
+
+<main class="layout" id="layout" aria-busy="true">
+
+  <!-- 左列 -->
+  <section class="col col-left">
+    <article class="card hero">
+      <div class="hero-main">
+        <div class="hero-ring">
+          <svg viewBox="0 0 200 200" id="ringSvg" role="img" aria-label="全馆空座占比">
+            <defs>
+              <linearGradient id="ringGrad" x1="0" y1="0" x2="1" y2="1">
+                <stop offset="0%" stop-color="#2bd39c" />
+                <stop offset="55%" stop-color="#f5b544" />
+                <stop offset="100%" stop-color="#f2604f" />
+              </linearGradient>
+            </defs>
+            <circle cx="100" cy="100" r="82" fill="none" stroke="rgba(255,255,255,.07)" stroke-width="16" />
+            <circle id="ringArc" cx="100" cy="100" r="82" fill="none" stroke="url(#ringGrad)" stroke-width="16"
+                    stroke-linecap="round" transform="rotate(-90 100 100)"
+                    stroke-dasharray="515.2" stroke-dashoffset="515.2" />
+          </svg>
+          <div class="hero-ring-center">
+            <strong id="heroPct">--</strong>
+            <span>在座率</span>
+          </div>
+        </div>
+        <div class="hero-figures">
+          <div class="hero-figure">
+            <span class="label">当前空座</span>
+            <strong id="heroAvailable" class="big teal">--</strong>
+            <span class="sub">个座位可预约</span>
+          </div>
+          <div class="hero-row">
+            <div class="mini">
+              <span class="label">在座</span>
+              <strong id="heroOccupied">--</strong>
+              <span class="delta" id="heroOccupiedDelta"></span>
+            </div>
+            <div class="mini">
+              <span class="label">总座位</span>
+              <strong id="heroTotal">--</strong>
+              <span class="sub">个开放座位</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="hero-foot">
+        <div class="dist">
+          <div class="dist-bar" id="distBar"></div>
+          <div class="dist-legend">
+            <span><i class="swatch teal"></i>空闲 <b id="distFree">--</b></span>
+            <span><i class="swatch amber"></i>较拥挤 <b id="distMid">--</b></span>
+            <span><i class="swatch red"></i>基本满座 <b id="distFull">--</b></span>
+          </div>
+        </div>
+        <div class="spark">
+          <div class="spark-head">
+            <span>近 6 小时在座率</span>
+            <b id="sparkNow">--</b>
+          </div>
+          <svg id="sparkSvg" viewBox="0 0 260 56" preserveAspectRatio="none" aria-label="近6小时在座率趋势"></svg>
+          <div class="spark-axis"><span id="sparkFrom">--:--</span><span id="sparkTo">--:--</span></div>
+        </div>
+      </div>
+    </article>
+
+    <article class="card">
+      <header class="card-head">
+        <h2>分馆实时占用</h2>
+        <span class="card-hint" id="libHint">点击卡片查看楼层与阅览区</span>
+      </header>
+      <div class="lib-list" id="libList">
+        <div class="skeleton-list" id="libSkeleton"></div>
+      </div>
+      <div class="panel" id="detailPanel" hidden>
+        <div class="panel-head">
+          <button class="panel-back" id="panelClose" title="返回">
+            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+          </button>
+          <h3 id="panelTitle">——</h3>
+          <div class="panel-stats" id="panelStats"></div>
+        </div>
+        <div class="panel-body" id="panelBody"></div>
+      </div>
+    </article>
+
+    <article class="card">
+      <header class="card-head">
+        <h2>分馆在座率对比</h2>
+        <span class="card-hint" id="cmpHint">—</span>
+      </header>
+      <div class="cmp" id="cmpChart"></div>
+    </article>
+  </section>
+
+  <!-- 右列 -->
+  <section class="col col-right">
+    <article class="card">
+      <header class="card-head">
+        <h2>座位热力图</h2>
+        <span class="card-hint">楼座 × 楼层 · 颜色越红越拥挤</span>
+      </header>
+      <div class="heat-hero">
+        <div class="heat-hero-label">
+          <span>全馆在座率</span>
+          <div class="heat-hero-value"><strong id="heatPct">--</strong><span id="heatAvail">—</span></div>
+        </div>
+        <div class="heat-hero-track"><i id="heatFill"></i></div>
+        <div class="heat-hero-scale">
+          <span>0%</span><span>25%</span><span>50%</span><span>75%</span><span>100%</span>
+        </div>
+      </div>
+      <div class="heat" id="heat"></div>
+      <div class="heat-legend">
+        <span>空闲</span>
+        <div class="heat-legend-bar"></div>
+        <span>满座</span>
+      </div>
+    </article>
+
+    <article class="card">
+      <header class="card-head">
+        <h2>在座率趋势</h2>
+        <span class="card-hint" id="trendHint">近 6 小时</span>
+      </header>
+      <div class="trend-tabs" id="trendTabs"></div>
+      <div class="chart-wrap">
+        <svg id="trendSvg" viewBox="0 0 640 240" preserveAspectRatio="none" aria-label="在座率趋势图"></svg>
+        <div class="chart-tip" id="chartTip" hidden></div>
+      </div>
+      <div class="trend-foot" id="trendFoot"></div>
+    </article>
+
+    <article class="card">
+      <header class="card-head">
+        <h2>运行状态</h2>
+        <span class="card-hint" id="statusHint">—</span>
+      </header>
+      <div class="status-grid" id="statusGrid"></div>
+    </article>
+
+    <article class="card note">
+      <header class="card-head"><h2>说明</h2></header>
+      <ul>
+        <li>数据来源：清华大学图书馆座位管理系统 <span class="mono">seat.lib.tsinghua.edu.cn</span></li>
+        <li>「在座」= 已选座 / 已预约 / 临时离开锁定的座位；「空座」= 可预约座位。</li>
+        <li>后端定时采集并做缓存，前端只会读缓存，不会额外增加校方服务器压力。</li>
+        <li>仅供学习与观察使用，选座请前往官方系统。</li>
+      </ul>
+    </article>
+  </section>
+</main>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script src="/assets/app.js" type="module"></script>
+</body>
+</html>

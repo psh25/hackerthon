@@ -1,0 +1,17 @@
+{
+  "name": "thu-seat-live",
+  "version": "1.0.0",
+  "private": true,
+  "description": "清华大学图书馆座位使用情况实时采集与可视化看板（零依赖）",
+  "main": "server.js",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "start": "node server.js",
+    "check": "node tools/check.mjs",
+    "verify": "node tools/verify-ui.mjs"
+  },
+  "keywords": ["tsinghua", "library", "seat", "realtime", "dashboard"],
+  "license": "MIT"
+}
